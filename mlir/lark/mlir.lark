@@ -85,7 +85,7 @@ memref_type : ranked_memref_type | unranked_memref_type
 
 // Dialect types - these can be opaque, pretty, or using custom dialects
 opaque_dialect_item : bare_id "<" string_literal ">"
-pretty_dialect_item : bare_id "." bare_id pretty_dialect_item_body?
+pretty_dialect_item : bare_id ("." bare_id)? pretty_dialect_item_body?
 pretty_dialect_item_body : "<" pretty_dialect_item_contents ("," pretty_dialect_item_contents)* ">"
 ?pretty_dialect_item_contents : ("(" pretty_dialect_item_contents ")")
                               | ("[" pretty_dialect_item_contents "]")
@@ -93,6 +93,7 @@ pretty_dialect_item_body : "<" pretty_dialect_item_contents ("," pretty_dialect_
                               | bare_id
                               | constant_literal
                               | type
+                              | pretty_dialect_item
 
 // NOTE: "pymlir_dialect_types" is defined externally by pyMLIR
 dialect_type : "!" (pymlir_dialect_types | opaque_dialect_item | pretty_dialect_item)

@@ -297,9 +297,26 @@ class OpaqueDialectType(Type):
 class PrettyDialectType(Type):
     _fields_ = ['dialect', 'type', 'body']
 
+    def __init__(self, node: Token = None, **fields):
+        if len(node) == 3:
+            self.dialect = node[0]
+            self.type = node[1]
+            self.body = node[2]
+        elif len(node) == 2:
+            self.dialect = None
+            self.type = node[0]
+            self.body = node[1]
+        else:
+            raise TypeError(node)
+
+        super().__init__(None, **fields)
+
     def dump(self, indent: int = 0) -> str:
-        return '!%s.%s<%s>' % (self.dialect, self.type, ', '.join(
+        result = '%s<%s>' % (self.type, ', '.join(
             dump_or_value(item, indent) for item in self.body))
+        if self.dialect is not None:
+            result = f"!{self.dialect}.{result}"
+        return result
 
 
 class FunctionType(Type):
@@ -441,8 +458,6 @@ class SparseTensorEncoding(Node):
     _fields_ = ['dim_level_type', 'dim_ordering', 'pointer_bit_width', 'index_bit_width']
 
     def __init__(self, node: Token = None, **fields):
-        super().__init__(None, **fields)
-
         dlt = list(filter(lambda x: x.children[0] == 'dimLevelType', node))
         dimo = list(filter(lambda x: x.children[0] == 'dimOrdering', node))
         pbw = list(filter(lambda x: x.children[0] == 'pointerBitWidth', node))
@@ -453,6 +468,7 @@ class SparseTensorEncoding(Node):
         self.pointer_bit_width = pbw[0].children[1].children[0] if pbw else 64
         self.index_bit_width = ibw[0].children[1].children[0] if ibw else 64
 
+        super().__init__(None, **fields)
 
     def dump(self, indent: int = 0) -> str:
         contents = []
